@@ -79,6 +79,14 @@ const Render = (() => {
     }
 
     document.getElementById("collapseAllBtn").textContent = Planner.areAllCollapsed() ? "Expand all" : "Collapse all";
+
+    // Real candidate pool: total courses minus ones already completed or
+    // flagged as tough/avoid — separate from `visible`, which is just the
+    // current search filter. Against still-needed picks, this reads as
+    // e.g. "3/10" — 3 picks still needed out of 10 real candidates left.
+    const poolSize = COURSES.length - state.taken.size - state.flagged.size;
+    const stillNeeded = Planner.PICK_SLOTS.filter(({ key }) => !state.picks[key]).length;
+    document.getElementById("poolStat").textContent = `${stillNeeded}/${poolSize} to choose`;
   }
 
   // Every course reaching this function is, by construction, not completed

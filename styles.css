@@ -194,6 +194,14 @@ html, body {
   gap: 12px;
 }
 
+.pool-stat {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
 .ghost-btn {
   font-family: var(--font-mono);
   font-size: 11px;
