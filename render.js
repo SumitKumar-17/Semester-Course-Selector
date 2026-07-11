@@ -88,9 +88,14 @@ const Render = (() => {
     const opts = slotOptions(course.slot);
     const isMulti = opts.length > 1;
     const info = Planner.rowStatus(course);
+    const myLetter = info.status === "picked" ? info.letter : null;
+    const usedElsewhere = Planner.allUsedLetters();
 
     const optionChips = opts.length
-      ? `<span class="option-chips">${opts.map(l => `<span class="mini-chip" style="background:${slotColor(l)}">${l}</span>`).join("")}</span>`
+      ? `<span class="option-chips">${opts.map(l => {
+          const cls = l === myLetter ? "reserved" : usedElsewhere.has(l) ? "used" : "";
+          return `<span class="mini-chip ${cls}" style="background:${slotColor(l)}" title="${cls === "used" ? "Already used by another pick" : cls === "reserved" ? "Reserved for this pick" : "Still free"}">${l}</span>`;
+        }).join("")}${isMulti ? `<span class="option-count">${opts.filter(l => !usedElsewhere.has(l) || l === myLetter).length}/${opts.length} free</span>` : ""}</span>`
       : "";
 
     const buttons = Planner.PICK_SLOTS.map(({ key, label, isTa }) => {
@@ -240,8 +245,14 @@ const Render = (() => {
   }
 
   function summary() {
-    const filled = Planner.PICK_SLOTS.filter(({ key }) => Planner.state.picks[key]).length;
+    const missing = Planner.PICK_SLOTS.filter(({ key }) => !Planner.state.picks[key]);
+    const filled = Planner.PICK_SLOTS.length - missing.length;
     document.querySelector(".selection .panel-sub").textContent = `${filled} of 4 picks`;
+
+    const stillNeededEl = document.getElementById("stillNeeded");
+    stillNeededEl.innerHTML = missing.length === 0
+      ? `<span class="still-needed-done">All 4 picks made</span>`
+      : `<span class="still-needed-label">Still need:</span> ${missing.map(({ label }) => `<span class="still-needed-chip">${label}</span>`).join("")}`;
 
     const totalCredits = Planner.PICK_SLOTS.reduce((sum, { key }) => {
       const pick = Planner.state.picks[key];

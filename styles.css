@@ -353,6 +353,23 @@ html, body {
   border-radius: 3px;
 }
 
+.mini-chip.used {
+  opacity: 0.3;
+  text-decoration: line-through;
+}
+
+.mini-chip.reserved {
+  box-shadow: 0 0 0 2px var(--gold);
+}
+
+.option-count {
+  margin-left: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  vertical-align: middle;
+}
+
 .course-meta {
   margin-top: 5px;
   font-size: 12.5px;
@@ -501,6 +518,42 @@ html, body {
 .slot-map-item.filled {
   color: #10141a;
   border-color: transparent;
+}
+
+/* ---------- Still needed ---------- */
+
+.still-needed {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.still-needed-label {
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.still-needed-chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--warn);
+  background: rgba(226, 114, 91, 0.12);
+  border: 1px solid rgba(226, 114, 91, 0.35);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.still-needed-done {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ok);
 }
 
 /* ---------- Picks ---------- */

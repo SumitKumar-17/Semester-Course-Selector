@@ -75,6 +75,14 @@ const Planner = (() => {
     return used;
   }
 
+  // All letters currently reserved by any pick — used for display (e.g.
+  // showing which of a multi-option course's slot letters are still free),
+  // as opposed to usedLettersExcluding, which is for conflict-checking one
+  // specific slot.
+  function allUsedLetters() {
+    return usedLettersExcluding(null);
+  }
+
   // Which of this course's slot options would still be free if placed into
   // slotKey. Only meaningful when slotKey is empty — a filled slot must be
   // cleared before anything else can go there (no silent overwriting), so
@@ -214,7 +222,7 @@ const Planner = (() => {
     PICK_SLOTS,
     get state() { return state; },
     get pendingChoice() { return pendingChoice; },
-    courseByCode, groupKeyFor, availableOptionsFor, rowStatus,
+    courseByCode, groupKeyFor, availableOptionsFor, allUsedLetters, rowStatus,
     togglePick, confirmChoice, cancelChoice, removePick,
     toggleTaken, toggleFlagged, toggleCollapsed,
     allGroupKeys, areAllCollapsed, collapseAll, expandAll,
