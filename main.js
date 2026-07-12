@@ -45,6 +45,9 @@ document.getElementById("picksBody").addEventListener("click", (e) => {
   Render.all();
 });
 
+document.getElementById("themeToggle").addEventListener("click", Theme.toggle);
+Theme.updateButton();
+
 document.getElementById("collapseAllBtn").addEventListener("click", () => {
   Planner.areAllCollapsed() ? Planner.expandAll() : Planner.collapseAll();
   Render.catalogue();
