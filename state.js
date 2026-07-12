@@ -125,12 +125,12 @@ const Planner = (() => {
       state.picks[slotKey] = null;
       pendingChoice = null;
       save();
-      Toast.show(`Removed ${code} from ${label}.`);
+      Toast.show(`Removed ${code} from ${label}.`, "info");
       return { needsChoice: false };
     }
 
     if (current && current.code !== code) {
-      Toast.show(`${label} already has ${current.code} — remove it first before picking a different course here.`);
+      Toast.show(`${label} already has ${current.code} — remove it first before picking a different course here.`, "error");
       return { needsChoice: false };
     }
 
@@ -138,7 +138,7 @@ const Planner = (() => {
     if (available.length === 0) {
       const opts = slotOptions(course.slot);
       const plural = opts.length > 1;
-      Toast.show(`No free slot left for ${course.code} — its option${plural ? "s" : ""} (${opts.join(", ")}) ${plural ? "are" : "is"} already covered by your other picks.`);
+      Toast.show(`No free slot left for ${course.code} — its option${plural ? "s" : ""} (${opts.join(", ")}) ${plural ? "are" : "is"} already covered by your other picks.`, "error");
       return { needsChoice: false };
     }
 
@@ -146,7 +146,7 @@ const Planner = (() => {
       state.picks[slotKey] = { code, letter: available[0] };
       pendingChoice = null;
       save();
-      Toast.show(`Added ${code} to ${label} (slot ${available[0]}).`);
+      Toast.show(`Added ${code} to ${label} (slot ${available[0]}).`, "success");
       return { needsChoice: false };
     }
 
@@ -161,7 +161,7 @@ const Planner = (() => {
     pendingChoice = null;
     save();
     const label = PICK_SLOTS.find(p => p.key === slotKey).label;
-    Toast.show(`Added ${code} to ${label} (slot ${letter}).`);
+    Toast.show(`Added ${code} to ${label} (slot ${letter}).`, "success");
   }
 
   function cancelChoice() {
@@ -174,7 +174,7 @@ const Planner = (() => {
     save();
     if (current) {
       const label = PICK_SLOTS.find(p => p.key === slotKey).label;
-      Toast.show(`Removed ${current.code} from ${label}.`);
+      Toast.show(`Removed ${current.code} from ${label}.`, "info");
     }
   }
 
@@ -188,12 +188,12 @@ const Planner = (() => {
     if (state.taken.has(code)) {
       state.taken.delete(code);
       save();
-      Toast.show(`${code} is back in your catalogue.`);
+      Toast.show(`${code} is back in your catalogue.`, "info");
     } else {
       state.taken.add(code);
       unassignFromPicks(code);
       save();
-      Toast.show(`Marked ${code} as completed — moved to Completed Courses.`);
+      Toast.show(`Marked ${code} as completed — moved to Completed Courses.`, "success");
     }
   }
 
@@ -204,11 +204,11 @@ const Planner = (() => {
     if (state.flagged.has(code)) {
       state.flagged.delete(code);
       save();
-      Toast.show(`Unflagged ${code}.`);
+      Toast.show(`Unflagged ${code}.`, "info");
     } else {
       state.flagged.add(code);
       save();
-      Toast.show(`Flagged ${code} as tough — it's still pickable, just marked.`);
+      Toast.show(`Flagged ${code} as tough — it's still pickable, just marked.`, "info");
     }
   }
 

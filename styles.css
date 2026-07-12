@@ -722,23 +722,34 @@ input:focus-visible,
   padding: 13px 18px 15px;
   border-radius: 10px;
   background: #1d2530;
-  border: 1px solid var(--warn);
+  border: 1px solid var(--border);
   color: var(--text);
   font-size: 13px;
   line-height: 1.45;
   opacity: 0;
   transform: translateX(-50%) translateY(16px) scale(0.95);
-  transition: opacity .25s ease, transform .25s ease;
+  transition: opacity .25s ease, transform .25s ease, border-color .15s ease;
   pointer-events: none;
   z-index: 100;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 2px 10px rgba(0, 0, 0, 0.3);
   overflow: hidden;
 }
 
+/* Type variants — color/icon reflect what actually happened, so a
+   successful pick doesn't read the same as a blocked one. */
+.toast-success { border-color: var(--ok); }
+.toast-success .toast-icon, .toast-success .toast-bar { color: var(--ok); background: var(--ok); }
+
+.toast-error { border-color: var(--warn); }
+.toast-error .toast-icon, .toast-error .toast-bar { color: var(--warn); background: var(--warn); }
+
+.toast-info { border-color: var(--gold); }
+.toast-info .toast-icon, .toast-info .toast-bar { color: var(--gold); background: var(--gold); }
+
 .toast-icon {
   flex-shrink: 0;
-  color: var(--warn);
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 700;
   line-height: 1.4;
 }
 
@@ -750,7 +761,6 @@ input:focus-visible,
   bottom: 0;
   height: 3px;
   width: 100%;
-  background: var(--warn);
   opacity: 0.55;
 }
 
