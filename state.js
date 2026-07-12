@@ -119,15 +119,17 @@ const Planner = (() => {
     const course = courseByCode(code);
     const current = state.picks[slotKey];
 
+    const label = PICK_SLOTS.find(p => p.key === slotKey).label;
+
     if (current && current.code === code) {
       state.picks[slotKey] = null;
       pendingChoice = null;
       save();
+      Toast.show(`Removed ${code} from ${label}.`);
       return { needsChoice: false };
     }
 
     if (current && current.code !== code) {
-      const label = PICK_SLOTS.find(p => p.key === slotKey).label;
       Toast.show(`${label} already has ${current.code} — remove it first before picking a different course here.`);
       return { needsChoice: false };
     }
@@ -144,6 +146,7 @@ const Planner = (() => {
       state.picks[slotKey] = { code, letter: available[0] };
       pendingChoice = null;
       save();
+      Toast.show(`Added ${code} to ${label} (slot ${available[0]}).`);
       return { needsChoice: false };
     }
 
@@ -157,6 +160,8 @@ const Planner = (() => {
     state.picks[slotKey] = { code, letter };
     pendingChoice = null;
     save();
+    const label = PICK_SLOTS.find(p => p.key === slotKey).label;
+    Toast.show(`Added ${code} to ${label} (slot ${letter}).`);
   }
 
   function cancelChoice() {
@@ -164,8 +169,13 @@ const Planner = (() => {
   }
 
   function removePick(slotKey) {
+    const current = state.picks[slotKey];
     state.picks[slotKey] = null;
     save();
+    if (current) {
+      const label = PICK_SLOTS.find(p => p.key === slotKey).label;
+      Toast.show(`Removed ${current.code} from ${label}.`);
+    }
   }
 
   function unassignFromPicks(code) {
@@ -177,20 +187,29 @@ const Planner = (() => {
   function toggleTaken(code) {
     if (state.taken.has(code)) {
       state.taken.delete(code);
+      save();
+      Toast.show(`${code} is back in your catalogue.`);
     } else {
       state.taken.add(code);
       unassignFromPicks(code);
+      save();
+      Toast.show(`Marked ${code} as completed — moved to Completed Courses.`);
     }
-    save();
   }
 
   // A personal note that a course looks tough / you'd rather avoid it — pure
   // annotation. It stays in the catalogue and stays pickable; this only adds
   // a visible reminder on the row, unlike "taken" which hides the course.
   function toggleFlagged(code) {
-    if (state.flagged.has(code)) state.flagged.delete(code);
-    else state.flagged.add(code);
-    save();
+    if (state.flagged.has(code)) {
+      state.flagged.delete(code);
+      save();
+      Toast.show(`Unflagged ${code}.`);
+    } else {
+      state.flagged.add(code);
+      save();
+      Toast.show(`Flagged ${code} as tough — it's still pickable, just marked.`);
+    }
   }
 
   function toggleCollapsed(groupKey) {
