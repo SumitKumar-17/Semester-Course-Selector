@@ -112,23 +112,27 @@ const Render = (() => {
       const occupiedByOther = pick && !isActive;
       const shortLabel = isTa ? "TA" : key.slice(1);
 
-      let disabled, title;
+      // Note: these buttons stay real-clickable even when "blocked" — a true
+      // HTML `disabled` attribute would silently eat the click, and then
+      // Planner.togglePick's explanatory toast would never fire. The greyed
+      // -out look comes from the `unavailable` class, not the attribute.
+      let blocked, title;
       if (isActive) {
-        disabled = false;
+        blocked = false;
         title = `Remove from ${label} (using slot ${pick.letter})`;
       } else if (occupiedByOther) {
-        disabled = true;
-        title = `${label} already has ${pick.code} — remove it first`;
+        blocked = true;
+        title = `${label} already has ${pick.code} — click to see why you can't overwrite it`;
       } else {
         const available = Planner.availableOptionsFor(course, key);
-        disabled = available.length === 0;
-        title = disabled ? "Blocked — clashes with your other picks" : `Set as ${label}`;
+        blocked = available.length === 0;
+        title = blocked ? "Blocked — click to see why" : `Set as ${label}`;
       }
 
-      return `<button class="pick-btn ${isTa ? "ta" : ""} ${isActive ? "active" : ""} ${occupiedByOther ? "held" : ""}"
+      return `<button class="pick-btn ${isTa ? "ta" : ""} ${isActive ? "active" : ""} ${occupiedByOther ? "held" : ""} ${blocked ? "unavailable" : ""}"
         title="${title}"
         data-action="pick" data-slot="${key}" data-code="${course.code}"
-        ${disabled ? "disabled" : ""}>${shortLabel}</button>`;
+        aria-disabled="${blocked}">${shortLabel}</button>`;
     }).join("");
 
     const pending = Planner.pendingChoice;
