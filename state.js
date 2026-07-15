@@ -92,6 +92,15 @@ const Planner = (() => {
     return slotOptions(course.slot).filter(l => !used.has(l));
   }
 
+  // A single-letter slot group is "one pick max from this slot" — so once ANY
+  // course in that group has been completed, the rest of the group can never
+  // be picked either. MULTI (flexible lab slots) and NONE (no fixed slot)
+  // groups have no such exclusivity and are never blocked this way.
+  function groupTakenBlocker(groupKey) {
+    if (groupKey === "MULTI" || groupKey === "NONE") return null;
+    return COURSES.find(c => groupKeyFor(c) === groupKey && state.taken.has(c.code)) || null;
+  }
+
   // Where a course currently stands: already in your semester, boxed out by
   // your other picks with nowhere left to go, or still open to pick.
   function rowStatus(course) {
@@ -100,6 +109,11 @@ const Planner = (() => {
     for (const { key, label } of PICK_SLOTS) {
       const pick = state.picks[key];
       if (pick && pick.code === course.code) return { status: "picked", label, letter: pick.letter };
+    }
+
+    const blocker = groupTakenBlocker(groupKeyFor(course));
+    if (blocker) {
+      return { status: "blocked", reason: `Already completed ${blocker.code} from this slot — only one pick allowed per slot, so this group is closed` };
     }
 
     const emptySlots = PICK_SLOTS.filter(({ key }) => !state.picks[key]);
@@ -190,10 +204,18 @@ const Planner = (() => {
       save();
       Toast.show(`${code} is back in your catalogue.`, "info");
     } else {
+      const key = groupKeyFor(courseByCode(code));
+      const groupNewlyClosed = !groupTakenBlocker(key);
       state.taken.add(code);
       unassignFromPicks(code);
+      if (groupNewlyClosed) state.collapsed.add(key);
       save();
-      Toast.show(`Marked ${code} as completed — moved to Completed Courses.`, "success");
+      Toast.show(
+        groupNewlyClosed
+          ? `Marked ${code} as completed — its slot group is now closed and collapsed.`
+          : `Marked ${code} as completed — moved to Completed Courses.`,
+        "success"
+      );
     }
   }
 
@@ -241,7 +263,7 @@ const Planner = (() => {
     PICK_SLOTS,
     get state() { return state; },
     get pendingChoice() { return pendingChoice; },
-    courseByCode, groupKeyFor, availableOptionsFor, allUsedLetters, rowStatus,
+    courseByCode, groupKeyFor, groupTakenBlocker, availableOptionsFor, allUsedLetters, rowStatus,
     togglePick, confirmChoice, cancelChoice, removePick,
     toggleTaken, toggleFlagged, toggleCollapsed,
     allGroupKeys, areAllCollapsed, collapseAll, expandAll,

@@ -351,6 +351,8 @@ html, body {
 .slot-group.collapsed .slot-group-body { display: none; }
 .slot-group.collapsed .caret { transform: rotate(-90deg); }
 
+.slot-group-closed .slot-group-head { opacity: 0.6; }
+
 .caret {
   font-size: 10px;
   color: var(--text-faint);

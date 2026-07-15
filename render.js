@@ -62,14 +62,19 @@ const Render = (() => {
 
       body.innerHTML = groups.map(g => {
         const collapsed = state.collapsed.has(g.key);
+        const blocker = Planner.groupTakenBlocker(g.key);
         const rows = g.courses.map(c => courseRow(c)).join("");
+        const closedBadge = blocker
+          ? `<span class="row-badge badge-blocked" title="Already completed ${blocker.code} from this slot — only one pick allowed per slot, so the rest of this group is closed">closed · ${blocker.code} done</span>`
+          : "";
         return `
-          <div class="slot-group ${collapsed ? "collapsed" : ""}" data-key="${g.key}">
+          <div class="slot-group ${collapsed ? "collapsed" : ""} ${blocker ? "slot-group-closed" : ""}" data-key="${g.key}">
             <div class="slot-group-head" data-action="toggle-group" data-key="${g.key}"
             role="button" tabindex="0" aria-expanded="${!collapsed}">
               <span class="caret">▾</span>
               ${groupHeaderChip(g.key)}
               <span class="slot-group-title">${groupHeaderTitle(g.key)}</span>
+              ${closedBadge}
               <span class="slot-group-count">${g.courses.length}</span>
             </div>
             <div class="slot-group-body">${rows}</div>
