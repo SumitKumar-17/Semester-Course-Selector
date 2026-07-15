@@ -92,13 +92,18 @@ const Planner = (() => {
     return slotOptions(course.slot).filter(l => !used.has(l));
   }
 
-  // A single-letter slot group is "one pick max from this slot" — so once ANY
-  // course in that group has been completed, the rest of the group can never
-  // be picked either. MULTI (flexible lab slots) and NONE (no fixed slot)
-  // groups have no such exclusivity and are never blocked this way.
-  function groupTakenBlocker(groupKey) {
+  // A single-letter slot group shares one weekly slot letter — if any current
+  // pick (in any of the 4 pick slots) already reserves that letter, no other
+  // course in the group can be picked alongside it. This is purely about the
+  // CURRENT timetable picks, not completed/taken courses. MULTI (flexible lab
+  // slots) and NONE (no fixed slot) groups have no such exclusivity.
+  function groupPickBlocker(groupKey) {
     if (groupKey === "MULTI" || groupKey === "NONE") return null;
-    return COURSES.find(c => groupKeyFor(c) === groupKey && state.taken.has(c.code)) || null;
+    for (const { key, label } of PICK_SLOTS) {
+      const pick = state.picks[key];
+      if (pick && pick.letter === groupKey) return { code: pick.code, label };
+    }
+    return null;
   }
 
   // Where a course currently stands: already in your semester, boxed out by
@@ -109,11 +114,6 @@ const Planner = (() => {
     for (const { key, label } of PICK_SLOTS) {
       const pick = state.picks[key];
       if (pick && pick.code === course.code) return { status: "picked", label, letter: pick.letter };
-    }
-
-    const blocker = groupTakenBlocker(groupKeyFor(course));
-    if (blocker) {
-      return { status: "blocked", reason: `Already completed ${blocker.code} from this slot — only one pick allowed per slot, so this group is closed` };
     }
 
     const emptySlots = PICK_SLOTS.filter(({ key }) => !state.picks[key]);
@@ -159,8 +159,9 @@ const Planner = (() => {
     if (available.length === 1) {
       state.picks[slotKey] = { code, letter: available[0] };
       pendingChoice = null;
+      state.collapsed.add(available[0]);
       save();
-      Toast.show(`Added ${code} to ${label} (slot ${available[0]}).`, "success");
+      Toast.show(`Added ${code} to ${label} (slot ${available[0]}) — its slot group is now closed and collapsed.`, "success");
       return { needsChoice: false };
     }
 
@@ -173,9 +174,10 @@ const Planner = (() => {
   function confirmChoice(slotKey, code, letter) {
     state.picks[slotKey] = { code, letter };
     pendingChoice = null;
+    state.collapsed.add(letter);
     save();
     const label = PICK_SLOTS.find(p => p.key === slotKey).label;
-    Toast.show(`Added ${code} to ${label} (slot ${letter}).`, "success");
+    Toast.show(`Added ${code} to ${label} (slot ${letter}) — its slot group is now closed and collapsed.`, "success");
   }
 
   function cancelChoice() {
@@ -204,18 +206,10 @@ const Planner = (() => {
       save();
       Toast.show(`${code} is back in your catalogue.`, "info");
     } else {
-      const key = groupKeyFor(courseByCode(code));
-      const groupNewlyClosed = !groupTakenBlocker(key);
       state.taken.add(code);
       unassignFromPicks(code);
-      if (groupNewlyClosed) state.collapsed.add(key);
       save();
-      Toast.show(
-        groupNewlyClosed
-          ? `Marked ${code} as completed — its slot group is now closed and collapsed.`
-          : `Marked ${code} as completed — moved to Completed Courses.`,
-        "success"
-      );
+      Toast.show(`Marked ${code} as completed — moved to Completed Courses.`, "success");
     }
   }
 
@@ -263,7 +257,7 @@ const Planner = (() => {
     PICK_SLOTS,
     get state() { return state; },
     get pendingChoice() { return pendingChoice; },
-    courseByCode, groupKeyFor, groupTakenBlocker, availableOptionsFor, allUsedLetters, rowStatus,
+    courseByCode, groupKeyFor, groupPickBlocker, availableOptionsFor, allUsedLetters, rowStatus,
     togglePick, confirmChoice, cancelChoice, removePick,
     toggleTaken, toggleFlagged, toggleCollapsed,
     allGroupKeys, areAllCollapsed, collapseAll, expandAll,

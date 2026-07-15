@@ -62,10 +62,10 @@ const Render = (() => {
 
       body.innerHTML = groups.map(g => {
         const collapsed = state.collapsed.has(g.key);
-        const blocker = Planner.groupTakenBlocker(g.key);
+        const blocker = Planner.groupPickBlocker(g.key);
         const rows = g.courses.map(c => courseRow(c)).join("");
         const closedBadge = blocker
-          ? `<span class="row-badge badge-blocked" title="Already completed ${blocker.code} from this slot — only one pick allowed per slot, so the rest of this group is closed">closed · ${blocker.code} done</span>`
+          ? `<span class="row-badge badge-blocked" title="${blocker.code} is already reserving this slot for ${blocker.label} — no other course here is pickable until you remove it">closed · ${blocker.code}</span>`
           : "";
         return `
           <div class="slot-group ${collapsed ? "collapsed" : ""} ${blocker ? "slot-group-closed" : ""}" data-key="${g.key}">
